@@ -32,7 +32,7 @@ router.get('/employer', auth, async (req, res) => {
 });
 
 // Get applications by jobseeker
-router.get('/my', auth, async (req, res) => {
+router.get('/my-applications', auth, async (req, res) => {
   if (req.user.role !== 'jobseeker') return res.status(403).json({ error: 'Access denied' });
   try {
     const applications = await Application.find({ applicant: req.user.id }).populate('job', 'title company location');
@@ -56,5 +56,15 @@ router.put('/:id', auth, async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+router.delete('/delete/:id',async (req,res)=>{
+  try{
+    const id = req.params.id;
+    const application = await Application.findByIdAndDelete(id);
+    res.json(application);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+})
 
 module.exports = router;

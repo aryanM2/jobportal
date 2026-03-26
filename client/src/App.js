@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { jwtDecode } from 'jwt-decode';
+import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -7,6 +11,8 @@ import JobList from './components/JobList';
 import JobDetails from './components/JobDetails';
 import PostJob from './components/PostJob';
 import Applications from './components/Applications';
+import MyJobs from './components/MyJobs';
+import MyApplications from './components/MyApplications';
 import About from './components/About';
 import Contact from './components/Contact';
 import './App.css';
@@ -17,8 +23,25 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Decode token to get user info, but for simplicity, assume it's set
-      // In real app, verify token with backend
+      try {
+        // Decode token to get user info
+        const decodedToken = jwtDecode(token);
+        // Check if token is expired
+        if (decodedToken.exp * 1000 > Date.now()) {
+          setUser({
+            id: decodedToken.id,
+            name: decodedToken.name,
+            email: decodedToken.email,
+            role: decodedToken.role
+          });
+        } else {
+          // Token expired, remove it
+          localStorage.removeItem('token');
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        localStorage.removeItem('token');
+      }
     }
   }, []);
 
@@ -27,43 +50,62 @@ function App() {
     setUser(null);
   };
 
+  // Function to refresh user state from token
+  const refreshUser = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.exp * 1000 > Date.now()) {
+          setUser({
+            id: decodedToken.id,
+            name: decodedToken.name,
+            email: decodedToken.email,
+            role: decodedToken.role
+          });
+        } else {
+          localStorage.removeItem('token');
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        localStorage.removeItem('token');
+        setUser(null);
+      }
+    }
+  };
+
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        <nav className="bg-blue-600 p-4 text-white">
-          <div className="container mx-auto flex justify-between">
-            <Link to="/" className="text-xl font-bold">Job Portal</Link>
-            <div>
-              <Link to="/jobs" className="mr-4">Jobs</Link>
-              <Link to="/about" className="mr-4">About</Link>
-              <Link to="/contact" className="mr-4">Contact</Link>
-              {!user ? (
-                <>
-                  <Link to="/login" className="mr-4">Login</Link>
-                  <Link to="/register">Register</Link>
-                </>
-              ) : (
-                <>
-                  <span className="mr-4">Welcome, {user.name}</span>
-                  {user.role === 'employer' && <Link to="/post-job" className="mr-4">Post Job</Link>}
-                  {user.role === 'employer' && <Link to="/applications" className="mr-4">Applications</Link>}
-                  <button onClick={logout} className="bg-red-500 px-4 py-2 rounded">Logout</button>
-                </>
-              )}
-            </div>
-          </div>
-        </nav>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/jobs" element={<JobList user={user} />} />
-          <Route path="/job/:id" element={<JobDetails user={user} />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/post-job" element={user && user.role === 'employer' ? <PostJob /> : <Navigate to="/login" />} />
-          <Route path="/applications" element={user && user.role === 'employer' ? <Applications /> : <Navigate to="/login" />} />
-        </Routes>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar user={user} logout={logout} />
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login setUser={setUser} />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/jobs" element={<JobList user={user} />} />
+            <Route path="/job/:id" element={<JobDetails user={user} />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/post-job" element={user && user.role === 'employer' ? <PostJob /> : <Navigate to="/login" />} />
+            <Route path="/applications" element={user && user.role === 'employer' ? <Applications /> : <Navigate to="/login" />} />
+            <Route path="/my-jobs" element={user && user.role === 'employer' ? <MyJobs /> : <Navigate to="/login" />} />
+            <Route path="/my-applications" element={user && user.role === 'jobseeker' ? <MyApplications /> : <Navigate to="/login" />} />
+          </Routes>
+        </main>
+        <ToastContainer 
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
       </div>
     </Router>
   );
