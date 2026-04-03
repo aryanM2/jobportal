@@ -1,1 +1,1 @@
-export const API_URL = 'http://localhost:4001/api';
+export const API_URL = process.env.REACT_APP_API_URL || 'https://jobportal-rplg.onrender.com';
