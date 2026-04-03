@@ -45,13 +45,16 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row gap-4 p-2 bg-white/10 backdrop-blur-sm rounded-xl">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
-                <input
-                  type="text"
-                  placeholder="Search jobs, companies, or keywords..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-lg"
-                />
+               <input
+  type="text"
+  placeholder="Search jobs, companies, or keywords..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg 
+             focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+             sm:text-lg text-black dark:text-black 
+             placeholder-gray-500 bg-white"
+/>
               </div>
               <button
                 onClick={() => window.location.href = `/jobs?search=${search}`}

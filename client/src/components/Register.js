@@ -35,7 +35,7 @@ const Register = () => {
     }
     
     try {
-      await axios.post(`${API_URL}auth/register`, { name, email, password, role });
+      await axios.post(`${API_URL}/auth/register`, { name, email, password, role });
       setSuccess('Registration successful! Redirecting to login page...');
       toast.success('Registration successful! Redirecting to login page...');
       setName('');
