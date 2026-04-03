@@ -35,7 +35,7 @@ const Navbar = ({ user, logout }) => {
             <Link to="/" className="flex items-center space-x-2 group">
               <Briefcase className="h-8 w-8 text-blue-600 group-hover:text-blue-700 transition-colors" />
               <span className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                JobPortal
+                CareerNest
               </span>
             </Link>
           </div>

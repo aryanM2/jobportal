@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Briefcase, Building, MapPin, DollarSign, Clock, FileText, Plus, X, CheckCircle, AlertCircle, Send, Save } from 'lucide-react';
+import { API_URL } from '../api';
+import { Briefcase, Building, MapPin, IndianRupee, Clock, FileText, Plus, X, CheckCircle, AlertCircle, Send, Save } from 'lucide-react';
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const PostJob = () => {
         benefits: benefitList
       };
       
-      await axios.post('http://localhost:4001/api/jobs/post', jobData, {
+      await axios.post(`${API_URL}/jobs/post`, jobData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       
@@ -207,12 +208,12 @@ const PostJob = () => {
                   Salary Range
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
                     id="salary"
                     name="salary"
-                    placeholder="e.g. $80,000 - $120,000"
+                    placeholder="e.g. ₹80,000 - ₹120,000"
                     value={formData.salary}
                     onChange={handleInputChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

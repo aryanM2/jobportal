@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { API_URL } from '../api';
 import { Briefcase, MapPin, DollarSign, Clock, Calendar, Edit, Trash2, Eye, Users, CheckCircle, XCircle, Clock as PendingIcon } from 'lucide-react';
 
 const MyJobs = () => {
@@ -16,14 +17,16 @@ const MyJobs = () => {
   const fetchMyJobs = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:4001/api/jobs/my', {
+      const res = await axios.get(`${API_URL}/jobs/my`, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         }
       });
-      setJobs(res.data);
-      calculateStats(res.data);
+      // Sort by date (newest first)
+      const sortedJobs = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setJobs(sortedJobs);
+      calculateStats(sortedJobs);
     } catch (error) {
       console.error('Error fetching jobs:', error.response?.data || error.message);
       
@@ -61,7 +64,7 @@ const MyJobs = () => {
   const deleteJob = async (jobId) => {
     if (window.confirm('Are you sure you want to delete this job posting?')) {
       try {
-        await axios.delete(`http://localhost:4001/api/jobs/${jobId}`, {
+        await axios.delete(`${API_URL}/jobs/${jobId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setJobs(jobs.filter(job => job._id !== jobId));

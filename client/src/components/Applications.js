@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Users, Briefcase, Mail, Phone, Calendar, CheckCircle, XCircle, Clock, FileText, Eye, MessageSquare, Download, Filter, ChevronDown } from 'lucide-react';
+import { API_URL } from '../api';
+import { Users, Briefcase, Mail, Phone, Calendar, CheckCircle, XCircle, Clock, FileText, Eye, MessageSquare, Download, Filter, ChevronDown, ExternalLink } from 'lucide-react';
 
 const Applications = () => {
   const [applications, setApplications] = useState([]);
@@ -15,7 +16,7 @@ const Applications = () => {
     const fetchApplications = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:4001/api/applications/employer', {
+        const res = await axios.get(`${API_URL}/applications/employer`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setApplications(res.data);
@@ -40,7 +41,7 @@ const Applications = () => {
   const updateStatus = async (id, status) => {
     setUpdatingStatus(id);
     try {
-      await axios.put(`http://localhost:4001/api/applications/${id}`, { status }, {
+      await axios.put(`${API_URL}/applications/${id}`, { status }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setApplications(applications.map(app => app._id === id ? { ...app, status } : app));
@@ -220,6 +221,21 @@ const Applications = () => {
                               <Calendar className="h-4 w-4 mr-2" />
                               Applied {new Date(app.createdAt).toLocaleDateString()}
                             </div>
+                            {app.resume && (
+                              <div className="flex items-center">
+                                <FileText className="h-4 w-4 mr-2" />
+                                <span>Resume: {app.resume.originalName}</span>
+                                <a
+                                  href={`${API_URL.replace('/api', '')}/uploads/${app.resume.filename}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="ml-2 text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  Download
+                                </a>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">

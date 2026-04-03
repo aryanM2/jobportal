@@ -1,0 +1,36 @@
+/* Mobile Bottom Navigation Styles */
+@media (max-width: 640px) {
+  .fixed.bottom-0 {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Ensure bottom nav doesn't interfere with content */
+@media (max-width: 640px) {
+  main {
+    padding-bottom: 4rem;
+  }
+}
+
+/* Active state styling */
+.text-blue-600.bg-blue-50 {
+  border-radius: 0.5rem;
+}
+
+/* Smooth transitions */
+.transition-colors {
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* Icon and text spacing */
+.flex-col.items-center.justify-center {
+  min-height: 3rem;
+}
+
+/* Prevent text selection on mobile */
+select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

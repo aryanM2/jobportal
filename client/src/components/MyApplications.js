@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Briefcase, MapPin, Calendar, CheckCircle, XCircle, Clock, Eye, MessageSquare, ExternalLink, User, Building } from 'lucide-react';
+import { Briefcase, MapPin, Calendar, CheckCircle, XCircle, Clock, Eye, MessageSquare, ExternalLink, User, Building, FileText } from 'lucide-react';
 import { API_URL } from '../api';
 
 const MyApplications = () => {
@@ -20,10 +20,13 @@ const MyApplications = () => {
       const res = await axios.get(`${API_URL}/applications/my-applications`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setApplications(res.data);
-      calculateStats(res.data);
+      // Sort by date (newest first)
+      const sortedApplications = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setApplications(sortedApplications);
+      calculateStats(sortedApplications);
     } catch (error) {
-      console.error('Error fetching applications:', error);
+      console.error('Error fetching applications:', error.response?.data || error.message);
+      toast.error('Failed to fetch applications. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -202,6 +205,21 @@ const MyApplications = () => {
                           <Clock className="h-4 w-4 mr-2" />
                           {application.job.type || 'Full-time'}
                         </div>
+                        {application.resume && (
+                          <div className="flex items-center">
+                            <FileText className="h-4 w-4 mr-2" />
+                            <span>Resume: {application.resume.originalName}</span>
+                            <a
+                              href={`${API_URL.replace('/api', '')}/uploads/${application.resume.filename}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-2 text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Download
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

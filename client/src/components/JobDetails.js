@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Building, MapPin, DollarSign, Clock, Calendar, Users, Briefcase, ArrowLeft, Send, Heart, Share2, CheckCircle, AlertCircle, IndianRupee } from 'lucide-react';
+import { API_URL } from '../api';
+import { Building, MapPin, DollarSign, Clock, Calendar, Users, Briefcase, ArrowLeft, Send, Heart, Share2, CheckCircle, AlertCircle, IndianRupee, FileText } from 'lucide-react';
 
 const JobDetails = ({ user }) => {
   const { id } = useParams();
@@ -11,12 +12,13 @@ const JobDetails = ({ user }) => {
   const [applying, setApplying] = useState(false);
   const [saved, setSaved] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState('');
+  const [resume, setResume] = useState(null);
 
   useEffect(() => {
     const fetchJob = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:4001/api/jobs/${id}`);
+        const res = await axios.get(`${API_URL}/jobs/${id}`);
         setJob(res.data);
       } catch (error) {
         console.error('Error fetching job details:', error);
@@ -37,15 +39,27 @@ const JobDetails = ({ user }) => {
       return;
     }
     
+    if (!resume) {
+      toast.error('Please upload your resume to apply');
+      return;
+    }
+    
     setApplying(true);
     setApplicationStatus('');
     
     try {
-      await axios.post('http://localhost:4001/api/applications', { 
-        jobId: id, 
-        coverLetter: 'Applied via job portal' 
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const formData = new FormData();
+      formData.append('jobId', id);
+      formData.append('coverLetter', 'Applied via job portal');
+      if (resume) {
+        formData.append('resume', resume);
+      }
+      
+      await axios.post(`${API_URL}/applications`, formData, {
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
       toast.success('Application submitted successfully!');
     } catch (err) {
@@ -152,6 +166,49 @@ const JobDetails = ({ user }) => {
                     <span className="text-red-700">Failed to submit application. Please try again.</span>
                   </div>
                 )}
+
+                {/* Resume Upload */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Resume (PDF, DOC, DOCX)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => setResume(e.target.files[0])}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-2 file:text-gray-700"
+                    />
+                    {resume && (
+                      <div className="mt-2 flex items-center text-sm text-gray-600">
+                        <FileText className="h-4 w-4 mr-2" />
+                        <span>{resume.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setResume(null)}
+                          className="ml-2 text-red-600 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cover Letter */}
+                <div className="mb-6">
+                  <label htmlFor="coverLetter" className="block text-sm font-medium text-gray-700 mb-2">
+                    Cover Letter (Optional)
+                  </label>
+                  <textarea
+                    id="coverLetter"
+                    value="Applied via job portal"
+                    onChange={(e) => setApplicationStatus(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Tell us why you're interested in this position..."
+                  />
+                </div>
 
                 {/* Apply Button */}
                 {user && user.role === 'jobseeker' ? (

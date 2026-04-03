@@ -1,15 +1,37 @@
 const express = require('express');
 const Application = require('../models/Application');
 const auth = require('../middleware/auth');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const router = express.Router();
 
-// Apply for a job
-router.post('/', auth, async (req, res) => {
+// Apply for a job with resume upload
+router.post('/', auth, upload.single('resume'), async (req, res) => {
   if (req.user.role !== 'jobseeker') return res.status(403).json({ error: 'Access denied' });
+  
   const { jobId, coverLetter } = req.body;
+  const resumeFile = req.file;
+  
   try {
-    const application = new Application({ job: jobId, applicant: req.user.id, coverLetter });
+    const applicationData = {
+      job: jobId,
+      applicant: req.user.id,
+      coverLetter
+    };
+    
+    // Add resume info if uploaded
+    if (resumeFile) {
+      applicationData.resume = {
+        filename: resumeFile.filename,
+        originalName: resumeFile.originalname,
+        path: resumeFile.path,
+        size: resumeFile.size,
+        mimeType: resumeFile.mimetype
+      };
+    }
+    
+    const application = new Application(applicationData);
     await application.save();
     res.status(201).json(application);
   } catch (err) {
@@ -22,10 +44,16 @@ router.get('/employer', auth, async (req, res) => {
   if (req.user.role !== 'employer') return res.status(403).json({ error: 'Access denied' });
   try {
     const applications = await Application.find()
-      .populate('job', 'title company')
-      .populate('applicant', 'name email profile')
-      .where('job.employer').equals(req.user.id);
-    res.json(applications);
+      .populate({
+        path: 'job',
+        match: { employer: req.user.id },
+        select: 'title company location salary type'
+      })
+      .populate('applicant', 'name email profile phone');
+    
+    // Filter out applications where job match failed (job doesn't belong to this employer)
+    const validApplications = applications.filter(app => app.job !== null);
+    res.json(validApplications);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

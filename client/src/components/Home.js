@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../api';
 import { Search, Briefcase, MapPin, DollarSign, Clock, Users, TrendingUp, Award, Target, ArrowRight, Building, GraduationCap, Heart, Code, BarChart, IndianRupee } from 'lucide-react';
 
 const Home = () => {
@@ -9,8 +10,10 @@ const Home = () => {
 
   useEffect(() => {
     const fetchJobs = async () => {
-      const res = await axios.get('http://localhost:4001/api/jobs');
-      setFeaturedJobs(res.data.slice(0, 3)); // Show first 3 as featured
+      const res = await axios.get(`${API_URL}/jobs`);
+      // Sort by date (newest first) and show first 6 as featured
+      const sortedJobs = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setFeaturedJobs(sortedJobs.slice(0, 6));
     };
     fetchJobs();
   }, []);
@@ -26,14 +29,14 @@ const Home = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20 lg:py-32 overflow-hidden">
+      <section className="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white py-16 sm:py-24 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in">
               Find Your Dream Job
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl lg:text-4xl mb-8 text-blue-100">
               Search thousands of job opportunities from top companies and start your career journey today
             </p>
           </div>
@@ -47,16 +50,17 @@ const Home = () => {
                   placeholder="Search jobs, companies, or keywords..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-500"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-lg"
                 />
               </div>
-              <Link 
-                to={`/jobs?search=${search}`} 
-                className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 flex items-center justify-center group"
+              <button
+                onClick={() => window.location.href = `/jobs?search=${search}`}
+                className="flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 flex items-center justify-center"
               >
+                <Search className="h-5 w-5 mr-2" />
                 Search Jobs
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>

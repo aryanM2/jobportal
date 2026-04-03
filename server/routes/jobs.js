@@ -1,5 +1,6 @@
 const express = require('express');
 const Job = require('../models/Job');
+const Application = require('../models/Application');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -19,7 +20,18 @@ router.get('/my', auth, async (req, res) => {
   if (req.user.role !== 'employer') return res.status(403).json({ error: 'Access denied' });
   try {
     const jobs = await Job.find({ employer: req.user.id });
-    res.json(jobs);
+    
+    // Get application counts for each job
+    const jobsWithApplications = await Promise.all(
+      jobs.map(async (job) => {
+        const applicationCount = await Application.countDocuments({ job: job._id });
+        const jobObj = job.toObject();
+        jobObj.applicationCount = applicationCount;
+        return jobObj;
+      })
+    );
+    
+    res.json(jobsWithApplications);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

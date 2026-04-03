@@ -25,8 +25,10 @@ const JobList = ({ user }) => {
       try {
         setLoading(true);
         const res = await axios.get(`${API_URL}/jobs`);
-        setJobs(res.data);
-        setFilteredJobs(res.data);
+        // Sort by date (newest first)
+        const sortedJobs = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setJobs(sortedJobs);
+        setFilteredJobs(sortedJobs);
       } catch (error) {
         console.error('Error fetching jobs:', error);
       } finally {
@@ -211,7 +213,7 @@ const JobList = ({ user }) => {
                 <p className="text-gray-600">Try adjusting your filters or search terms</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                 {filteredJobs.map(job => (
                   <div key={job._id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden group">
                     <div className="p-6">
@@ -258,19 +260,11 @@ const JobList = ({ user }) => {
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                         <Link
                           to={`/job/${job._id}`}
-                          className="inline-flex items-center text-blue-600 font-medium text-sm hover:text-blue-700 group"
+                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center justify-center"
                         >
-                          View Details
-                          <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                          View Job Details
                         </Link>
-                        {user && user.role === 'jobseeker' && (
-                          <button
-                            onClick={() => applyForJob(job._id)}
-                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            Apply Now
-                          </button>
-                        )}
                       </div>
                     </div>
                   </div>
